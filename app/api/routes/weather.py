@@ -1,22 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter 
 from sqlalchemy.orm import Session
 
 from app.core.background_job import fetch_weather_data
-from app.db.session import SessionLocal
+from app.db.session import DatabaseSession 
 from app.models.location import Location
 from app.core.config import REDIS as redis
 
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get("/weather/{city_name}")
-async def get_weather(city_name: str, db: Session = Depends(get_db)):
+async def get_weather(city_name: str, db: Session = DatabaseSession):
     cached_weather = await redis.get(f"weather:{city_name}")
     if cached_weather:
         return {"source": "cache", "data": eval(cached_weather)}
@@ -28,7 +22,7 @@ async def get_weather(city_name: str, db: Session = Depends(get_db)):
     return {"message": "try it later."}
 
 @router.get("weather/alerts/{city_name}")
-async def get_weather_alerts(city_name: str, db: Session = Depends(get_db)):
+async def get_weather_alerts(city_name: str, db: Session = DatabaseSession):
     location = db.query(Location).filter(Location.name == city_name).first()
     if not location or location.weather_data is None:
         return {"message": "No weather data found for this city."}
