@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from app.api.routes import auth, notes
+from app.api.routes import weather
 from app.db.session import engine
 from app.db.base import Base
 from fastapi.openapi.utils import get_openapi
@@ -46,8 +46,7 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-app.include_router(notes.router, prefix="/notes", tags=["Notes"])
+app.include_router(weather.router, prefix="/notes", tags=["Notes"])
 
 @app.get("/")
 def read_root():

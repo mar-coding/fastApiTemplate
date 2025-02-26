@@ -1,34 +1,47 @@
 version: '3.9'
 
 services:
-  db:
-    container_name: postgres
-    image: postgres
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - PGDATA=/data/postgres
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6380:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes:
-      - db:/data/postgres
-    ports:
-      - "${POSTGRES_PORT}:5432"
-    networks:
-      - db
-    restart: always
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
-      interval: 1s
-      timeout: 5s
-      retries: 10
+      - cache:/data
+    environment:
+      - REDIS_HOST=cache
+      - REDIS_PASSWORD=redis
+      - REDIS_USERNAME=mypassword
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - "8080:8080"
-    networks:
-      - db
+#  db:
+#    container_name: postgres
+#    image: postgres
+#    environment:docker
+#      - POSTGRES_DB=${POSTGRES_DB}
+#      - POSTGRES_USER=${POSTGRES_USER}
+#      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+#      - PGDATA=/data/postgres
+#    volumes:
+#      - db:/data/postgres
+#    ports:
+#      - "${POSTGRES_PORT}:5432"
+#    networks:
+#      - db
+#    restart: always
+#    healthcheck:
+#      test: ["CMD", "pg_isready", "-U", "postgres"]
+#      interval: 1s
+#      timeout: 5s
+#      retries: 10
+#
+#  adminer:
+#    image: adminer
+#    restart: always
+#    ports:
+#      - "8080:8080"
+#    networks:
+#      - db
 
 
 networks:
@@ -37,3 +50,5 @@ networks:
 
 volumes:
   db:
+  cache:
+    driver: local
